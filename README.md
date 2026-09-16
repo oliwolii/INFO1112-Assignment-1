@@ -1,1 +1,6 @@
 # INFO1112-Assignment-1
+
+FULL NAME: CHOY, Olicia Shun Hei 
+UNIKEY: ocho0461
+SID: 560383449
+TUTORIAL NO: 18
