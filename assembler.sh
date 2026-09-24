@@ -58,13 +58,13 @@ fi
 # First line has to be a number between 0 and 2 
 
 lines=()
-while IFS= read -r line || [ -n "$line" ]; do.  #r = raw, ifs = set to nothing  
+while IFS= read -r line || [ -n "$line" ]; do  #r = raw, ifs = set to nothing  
     lines+=("$line")
 done < "$input"
 
 
 # Strip any trailing carriage returns (in case of CRLF line endings)
-for i in "${!lines[@]}"; do. # loop i over indicies of array 
+for i in "${!lines[@]}"; do # loop i over indicies of array 
     lines[$i]="${lines[$i]%$'\r'}" #/r removes any trailing /rs 
 done
 
@@ -118,7 +118,7 @@ if [ "$line1" -eq 0 ]; then #if first line = 0
     rm -f "$output" #removes the old file if the script runs twice 
 
     for b in "${dataArray[@]}"; do     #for every letter in the array, 
-        printf "\x$b" >> "$output".    #\x convers each each into the real byte value, >> appends to output 
+        printf "\x$b" >> "$output"    #\x convers each each into the real byte value, >> appends to output 
     done
 
     echo "It is a QUIT program"
@@ -191,7 +191,7 @@ while [ "$idx" -lt "$total_lines" ] && [ "$instruction_count" -lt "$max_instruct
 # Validating is over Check the Op codes now 
 
 
-    IFS=',' read -r ins reg mem <<< "$line". # Splits the line into instruction, register then memory 
+    IFS=',' read -r ins reg mem <<< "$line" # Splits the line into instruction, register then memory 
 
     opcode=$(get_opcode "$ins")
     if [ "$opcode" -eq -1 ]; then #-1 = failure for the function above 
