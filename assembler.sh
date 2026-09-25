@@ -8,10 +8,6 @@
 #   1 - any error condition (no .bin file produced)
 
 
-## File must have quit 0,0 at the end 
-# file should not have more than 100 lines 
-# most of the test files from the spec should fail 
-# run via ./assembler.sh file name 
 
 # Assembler only accepts 1 argument: 
 
