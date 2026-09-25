@@ -82,6 +82,26 @@ get_opcode() {
     esac
 } 
 
+# decimal_to_binary() from ed pointers 
+decimal_to_binary()
+{
+    local num=$1
+    local binary=""
+    local temp=$num
+
+    for weight in 128 64 32 16 8 4 2 1
+    do
+        if (( temp >= weight ))
+        then
+            binary="${binary}1"
+            temp=$((temp - weight))
+        else
+            binary="${binary}0"
+        fi
+    done
+    echo "$binary"
+}
+
 # Array holding the bytes (as 2-digit hex strings) to be written, in order.
 dataArray=()
 
@@ -110,9 +130,17 @@ if [ "$line1" -eq 0 ]; then #if first line = 0
     # opcode 8 (001000) + reg 00 -> byte1 = 00100000 = 0x20
     # memory address 00000000    -> byte2 = 0x00
     # based on the specification given 
+    # build these via decimal_to_binary() instead of hardcoding the hex
 
-    dataArray+=("20")
-    dataArray+=("00")
+    opcode_bin=$(decimal_to_binary 8)   # opcode for QUIT is 8 -> "00001000"
+    reg_bin=$(decimal_to_binary 0)      # reg is always 0 for QUIT -> "00000000"
+    mem_bin=$(decimal_to_binary 0)      # mem is always 0 for QUIT -> "00000000"
+
+    byte1_bin="${opcode_bin: -6}${reg_bin: -2}" #low 6 bits of opcode + low 2 bits of reg
+    byte2_bin="$mem_bin" #mem is already the whole byte
+
+    dataArray+=("$(printf "%02x" "$((2#$byte1_bin))")") #parse binary string as a number, then hex it
+    dataArray+=("$(printf "%02x" "$((2#$byte2_bin))")")
 
     output="${input%.vsc}.bin" #removes the .vsc from the file name and called it x.bin 
     rm -f "$output" #removes the old file if the script runs twice 
@@ -151,7 +179,8 @@ for idx in 1 2; do #read second and third line
         exit 1
     fi
 
-    dataArray+=("$(printf "%02x" "$numval")")  #append hex of line 2 and line 3 to data array 
+    val_bin=$(decimal_to_binary "$numval") #turn the static value into an 8 bit binary string
+    dataArray+=("$(printf "%02x" "$((2#$val_bin))")")  #append hex of line 2 and line 3 to data array 
 done
 
 # Instruction Reading Loop 
@@ -237,11 +266,16 @@ while [ "$idx" -lt "$total_lines" ] && [ "$instruction_count" -lt "$max_instruct
 
     # Build the two bytes: byte1 = opcode(6 bits) . reg(2 bits)
     #                       byte2 = mem(8 bits)
-    byte1=$(( opcode * 4 + regval )) #shift by 2 bits and add the register value 
-    byte2=$memval
+    # using decimal_to_binary() for each field instead of opcode*4+regval
+    opcode_bin=$(decimal_to_binary "$opcode")
+    reg_bin=$(decimal_to_binary "$regval")
+    mem_bin=$(decimal_to_binary "$memval")
 
-    dataArray+=("$(printf "%02x" "$byte1")") #%02x --> convert to lowercase hex 
-    dataArray+=("$(printf "%02x" "$byte2")")
+    byte1_bin="${opcode_bin: -6}${reg_bin: -2}" #low 6 bits of opcode + low 2 bits of reg
+    byte2_bin="$mem_bin" #mem is already the whole byte
+
+    dataArray+=("$(printf "%02x" "$((2#$byte1_bin))")") #%02x --> convert to lowercase hex 
+    dataArray+=("$(printf "%02x" "$((2#$byte2_bin))")")
 
     instruction_count=$((instruction_count + 1))
 
